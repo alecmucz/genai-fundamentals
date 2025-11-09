@@ -1,5 +1,7 @@
 import os
 from dotenv import load_dotenv
+from neo4j_graphrag.llm import OpenAILLM
+from neo4j_graphrag.generation import GraphRAG
 load_dotenv()
 
 from neo4j import GraphDatabase
@@ -27,10 +29,23 @@ retriever = VectorRetriever(
 )
 
 # Create the LLM
-
+llm = OpenAILLM(
+    model_name="gpt-4o",
+    model_params={"temperature":1}
+    )
 # Create GraphRAG pipeline
-
+rag = GraphRAG(retriever=retriever,llm=llm)
 # Search 
+query_text=input("Enter Yours Query:")
+
+response = rag.search(
+    query_text=query_text,
+    retriever_config={"top_k":5},
+    return_context=True
+)
+
+print(response.answer)
+print("Context:",response.retriever_result.items)
 
 # CLose the database connection
 driver.close()
